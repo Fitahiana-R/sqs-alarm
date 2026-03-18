@@ -1,0 +1,24 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-west-1:879381257984:log-alarm-sns-topic-dev:6dc55e85-2150-4d33-a245-4e8407aa9689",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "95df01b4-ee98-5cb9-9903-4c221d03eb5e",
+        "TopicArn": "arn:aws:sns:eu-west-1:879381257984:log-alarm-sns-topic-dev",
+        "Subject": "Alerte [DEV] - Application: PUTLOG",
+        "Message": "{\"description\": \"Aucun log reçu sur le groupe de logs.\", \"details\": \"Threshold Crossed: 1 out of the last 1 datapoints was less than the threshold (1.0)\", \"application\": \"putlog\", \"environnement\": \"dev\", \"log_group\": \"/mgitservice/dev/putlog\", \"timestamp\": \"2026-02-24T10:30:00Z\"}",
+        "Timestamp": "2026-02-24T10:30:05.123Z",
+        "SignatureVersion": "1",
+        "MessageAttributes": {
+          "target": {
+            "Type": "String",
+            "Value": "slack"
+          }
+        }
+      }
+    }
+  ]
+}

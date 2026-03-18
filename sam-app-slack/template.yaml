@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Système d'alerte d'inactivité des logs (La partie SNS -> SQS -> lambda)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: La plateforme (dev, prod)
+
+  client:
+    Type: String
+    Description: Nom du client pour le role
+
+  SsmParameterSlackToken:
+    Type: String
+    Description: SSM PARAMETER STORE contenant le token de l application webhook
+
+  SsmParameterWebhookUrl:
+    Type: String
+    Description: SSM PARAMETER STORE contenant l url de l application webhook
+
+Resources:
+  # La fonction Lambda
+  SlackDistributorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app_slack.lambda_handler
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          SSM_PARAM_SLACK_TOKEN: !Ref SsmParameterSlackToken
+          SSM_PARAM_URL_WEBHOOK_APP: !Ref SsmParameterWebhookUrl
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub "*${client}/${EnvironmentName}/*"
+      Events:
+        # Connexion directe SNS -> Lambda avec filtrage
+        SnsEvent:
+          Type: SNS
+          Properties:
+            Topic: 
+              Fn::ImportValue:
+                !Sub "Sns-topic-monitor-${client}-${EnvironmentName}"
+            FilterPolicy:
+              destinataire:
+                - slack
+

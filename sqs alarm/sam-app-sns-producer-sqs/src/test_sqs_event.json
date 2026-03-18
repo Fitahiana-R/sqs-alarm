@@ -1,0 +1,26 @@
+{
+  "detail": {
+    "alarmName": "alarm-sqs-backlog-mgitservice-dev-payment",
+    "state": {
+      "value": "ALARM",
+      "reason": "Threshold Crossed: 150 > 100"
+    },
+    "configuration": {
+      "description": "Alarme pour la file: mgitservice-dev-payment-worker",
+      "metrics": [
+        {
+          "metricStat": {
+            "metric": {
+              "namespace": "AWS/SQS",
+              "metricName": "ApproximateNumberOfMessagesVisible",
+              "dimensions": {
+                "QueueName": "mgitservice-dev-payment_worker"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "time": "2024-03-09T10:00:00Z"
+}

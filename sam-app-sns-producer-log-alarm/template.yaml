@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Système d'alerte d'inactivité des logs (La partie SNS -> SQS -> lambda)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: La plateforme (dev, prod)
+
+  client:
+    Type: String
+    Description: Nom du client pour le role
+
+Resources:
+  # La fonction Lambda
+  SlackDistributorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app_sns.lambda_handler
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: 
+            Fn::ImportValue:
+              !Sub "Sns-topic-monitor-${client}-${EnvironmentName}"
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: 
+              Fn::ImportValue:
+                !Sub "Sns-topic-monitor-${client}-${EnvironmentName}-name"
+      Events:
+        AlarmEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - aws.cloudwatch
+              detail-type:
+                - CloudWatch Alarm State Change
+              detail:
+                alarmName: [{ "prefix": !Sub "alarm-logs-breaching-${client}" }]
+

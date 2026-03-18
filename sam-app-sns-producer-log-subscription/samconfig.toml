@@ -1,0 +1,13 @@
+version = 0.1
+[dev.deploy.parameters]
+stack_name = "producer-log-subscription-filter-dev-mgitservice"
+resolve_s3 = true
+s3_prefix = "producer-log-subscription-filter-dev-mgitservice/dev"
+region = "eu-west-1"
+profile = "879381257984_AWS-Sandbox-AdminAccess"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+    "EnvironmentName=dev",
+    "client=mgitservice"
+]

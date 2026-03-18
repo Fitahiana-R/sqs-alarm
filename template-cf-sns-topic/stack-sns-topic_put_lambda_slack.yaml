@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Stack CloudFormation pour la creation dun Topic SNS
+
+Parameters:
+  SnsTopicName:
+    Type: String
+    Description: Nom du SNS topic à créer
+
+  client:
+    Type: String
+    Description: Nom du client pour le role
+
+  EnvironmentName:
+    Type: String
+
+Resources:
+  # Le Topic SNS
+  SnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Ref SnsTopicName
+
+Outputs:
+  SnsTopicIdArn:
+    Export:
+      Name: !Sub "Sns-topic-monitor-${client}-${EnvironmentName}"
+    Value: !Ref SnsTopic
+
+  SnsTopicName:
+    Value: !GetAtt SnsTopic.TopicName
+    Export:
+      Name: !Sub "Sns-topic-monitor-${client}-${EnvironmentName}-name"

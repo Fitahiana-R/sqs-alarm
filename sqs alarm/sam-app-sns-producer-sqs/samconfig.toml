@@ -1,0 +1,22 @@
+# ✅ OPTION A : Déduire du [default] (Recommandé)
+version = 0.1
+
+[default.global.parameters]
+stack_name = "producer-sqs-alarm"
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_NAMED_IAM"
+resolve_s3 = true
+region = "eu-west-1"
+profile = "879381257984_AWS-Sandbox-AdminAccess"
+confirm_changeset = false
+
+[dev.deploy.parameters]
+stack_name = "producer-sqs-alarm-dev"
+parameter_overrides = [
+    "EnvironmentName=dev",
+    "client=mgitservice",
+    "LocalStackTest=false",
+    "AlarmThreshold=100",
+    "PeriodAlarm=300"
+]

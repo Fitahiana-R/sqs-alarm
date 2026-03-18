@@ -1,0 +1,7 @@
+.venv
+**/.aws-sam
+.vscode
+
+.pytest_cache
+
+**/__pycache__/

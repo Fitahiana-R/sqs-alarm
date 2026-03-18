@@ -1,0 +1,80 @@
+# DEPLOIEMENT
+
+# 1. DEPLOYER SNS TOPIC
+   cd template-cf-sns-topic
+   aws cloudformation deploy \
+    --template-file stack-sns-topic_put_lambda_slack.yaml \
+    --stack-name stack-log-alarm-sns-topic-dev-mgitservice \
+    --parameter-overrides SnsTopicName=log-alarm-sns-topic-dev-mgitservice client=mgitservice EnvironmentName=dev \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess
+
+# 2. DEPLOYER SAM ENVOYER MESSAGE SNS vers SLACK
+   cd ../sam-app-slack
+   sam build
+   sam deploy --config-env dev
+
+# 3. DEPLOYER UN LOG ALARM
+   cd ../template-cf-log-alarm
+   aws cloudformation deploy \
+    --template-file stack-log-alarm.yaml \
+    --stack-name stack-log-alarm-putlog-dev-mgitservice \
+    --parameter-overrides LogGroupName=/mgitservice/dev/putlog client=mgitservice PeriodAlarm=300 \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess
+
+# 4. DEPLOYER SAM ENVOIE alert log-alarm VERS SNS
+   cd ../sam-app-sns-producer-log-alarm
+   sam build
+   sam deploy --config-env dev
+
+# 5. DEPLOYER SAM PRODUCER SUBSCRIPTION FILTER
+   cd ../sam-app-sns-producer-log-subscription
+   sam build
+   sam deploy --config-env dev
+
+# 6. DEPLOYER CLOUDFORMATION LOG SUBSCRIPTION FILTER
+   cd ../template-cf-log-subscription-filter
+   aws cloudformation deploy \
+    --template-file template-log-subscription.yaml \
+    --stack-name stack-log-subscription-putlog-dev-mgitservice \
+    --parameter-overrides LogGroupName=/mgitservice/dev/putlog client=mgitservice patternFilter=ERROR EnvironmentName=dev \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess
+
+# SUPPRESSION
+
+
+# 1. LOG SUBSCRIPTION
+cd template-cf-log-alarm
+aws cloudformation delete-stack \
+    --stack-name stack-log-subscription-putlog-dev-mgitservice \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess
+
+# 2. LOG ALARM
+cd ../template-cf-log-alarm
+aws cloudformation delete-stack \
+    --stack-name stack-log-alarm-putlog-dev-mgitservice \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess
+
+
+# 3. APP SNS PRODUCER LOG ALARM
+cd ../sam-app-sns-producer-log-alarm
+sam delete --config-env dev --no-prompts
+
+# 4. APP SNS PRODUCER SUBSCRIPTION
+cd ../sam-app-sns-producer-log-subscription
+sam delete --config-env dev --no-prompts
+
+# 5. APP SLACK
+cd ../sam-app-slack
+sam delete --config-env dev --no-prompts
+
+# 6. SNS TOPIC
+cd ../template-cf-sns-topic
+aws cloudformation delete-stack \
+    --stack-name stack-log-alarm-sns-topic-dev \
+    --region eu-west-1 \
+    --profile 879381257984_AWS-Sandbox-AdminAccess

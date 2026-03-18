@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Stack CloudFormation pour la creation dun Topic SNS
+
+Parameters:
+  LogGroupName:
+    Type: String
+
+  client:
+    Type: String
+    Description: La plateforme ou client de l infrastructure
+
+  EnvironmentName:
+    Type: String
+    Description: La plateforme (dev, prod)
+
+  patternFilter:
+    Type: String
+    Default: "ERROR"
+    Description: "Pattern e detecter pour l alerte"
+
+Resources:
+  MyLogSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      FilterPattern: "ERROR"
+      DestinationArn: 
+        Fn::ImportValue:
+          !Sub "SlackDistributorFunction-monitor-${client}-${EnvironmentName}"
+      FilterName: !Sub "${patternFilter}-${LogGroupName}"

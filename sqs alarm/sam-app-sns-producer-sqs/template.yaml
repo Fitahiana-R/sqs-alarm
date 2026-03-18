@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Système d'alerte pour plus de 100 message dans sqs  (La partie SNS -> SQS -> lambda)
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: La plateforme (dev, prod)
+
+  client:
+    Type: String
+    Description: Nom du client pour le role
+
+  AlarmThreshold:
+    Type: Number
+    Default: 100
+  PeriodAlarm:
+    Type: Number
+    Default: 300
+  LocalStackTest:
+    Type: String
+    Default: "false"
+
+Resources:
+  # La fonction Lambda
+  SlackDistributorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app_sqs.lambda_handler
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: 
+            Fn::ImportValue:
+              !Sub "Sns-topic-monitor-${client}-${EnvironmentName}"
+
+          # Pas de SNS_ENDPOINT ici → boto3 utilisera le service AWS par défaut
+          LOCALSTACK_TEST: !Ref LocalStackTest
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: 
+              Fn::ImportValue:
+                !Sub "Sns-topic-monitor-${client}-${EnvironmentName}-name"
+      Events:
+        AlarmEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - aws.cloudwatch
+              detail-type:
+                - CloudWatch Alarm State Change
+              detail:
+                alarmName: [{ "prefix": !Sub "alarm-sqs-backlog-${client}" }]
+

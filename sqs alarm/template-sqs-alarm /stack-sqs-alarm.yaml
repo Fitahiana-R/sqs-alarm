@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Stack CloudFormation pour la creation d une Alarme CloudWatch sur SQS
+
+Parameters:
+  QueueName:
+    Type: String
+    Description: Nom de la file SQS a surveiller
+
+  client:
+    Type: String
+    Description: Nom du client pour le role
+
+  ThresholdMessages:
+    Type: Number
+    Default: 100
+    Description: Nombre de messages a partir duquel l alarme se déclenche
+
+
+Resources:
+  # L'Alarme sqs
+  AbsenceOfLogsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "alarm-sqs-backlog-${client}-${QueueName}"
+      AlarmDescription: !Sub "Alarme si plus de ${ThresholdMessages} messages dans la file ${QueueName}"
+      
+      # Métrique spécifique à SQS
+      MetricName: "ApproximateNumberOfMessagesVisible" 
+      Namespace: "AWS/SQS"
+      
+      # Dimension pour identifier la file précise
+      Dimensions:
+        - Name: QueueName
+          Value: !Ref QueueName
+
+       # Condition : Plus grand que le seuil >100
+      Threshold: !Ref ThresholdMessages
+      ComparisonOperator: GreaterThanThreshold
+
+      # Gestion des données manquantes : 
+      # Si pas de métrique, on considère qu'il y a 0 message (donc pas d'alarme)
+      TreatMissingData: notBreaching 
+
+  
